@@ -1,0 +1,58 @@
+==================
+TEMPORAL CLASSES:
+==================
+
+LocalDate — date without time or zone (e.g., 2026-01-08)
+LocalTime — time without date or zone (e.g., 14:30:00)
+LocalDateTime — date + time, no zone (e.g., 2026-01-08T14:30:00)
+ZonedDateTime — date + time + time zone (e.g., Asia/Kolkata)
+Instant — an instant on the UTC timeline (epoch-based)
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+=======================
+Validation Annotations:
+========================
+
+@NotNull — required field.
+@Past, @PastOrPresent — date/time must be before/<= now.
+@Future, @FutureOrPresent — date/time must be after/>= now.
+
+
+Example:
+
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.FutureOrPresent; 
+public class MaintenanceRequestDto{
+
+
+    private Long maintenance_id;
+
+    @PastOrPresent(message = "Request date cannot be in the future") //This annotation make sure that this date must be is past or now.
+    private LocalDate requestDate;
+
+
+    @FutureOrPresent(message = "Completed date cannot be in the past")  //This annotation make sure that this date must be is future or now.
+    private LocalDate completedDate;
+
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+========
+Chrono :
+========
+
+// Calculates the difference in days, months, and years between requestDate and completedDate.
+Example:
+   
+   import java.time.temporal.ChronoUnit;
+
+   public void calculateDateDifference(LocalDate requestDate, LocalDate completedDate) {
+        long days = ChronoUnit.DAYS.between(requestDate, completedDate);
+        long months = ChronoUnit.MONTHS.between(requestDate, completedDate);
+        long years = ChronoUnit.YEARS.between(requestDate, completedDate);
+         System.out.println("Difference: " + years + " years, " + months + " months, " + days + " days.");
+        
+    }
