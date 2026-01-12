@@ -1,0 +1,85 @@
+package com.example.event.service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.event.dto.EventRequestDTO;
+import com.example.event.dto.EventResponseDTO;
+import com.example.event.dto.PurchaseRequestDTO;
+import com.example.event.dto.PurchaseResponseDTO;
+import com.example.event.entity.Event;
+import com.example.event.exception.EventNotFoundException;
+import com.example.event.exception.TicketOutOfBoundException;
+import com.example.event.mapper.ModelMapper;
+import com.example.event.repository.EventRepository;
+
+@Service
+public class EventService {
+
+	@Autowired
+	private EventRepository eventRepo;
+	@Autowired
+	private ModelMapper mapper;
+	
+	public EventResponseDTO createEvent(EventRequestDTO request) {
+		Event event = mapper.toEvent(request);
+		Event savedEvent = eventRepo.save(event);
+		EventResponseDTO response = mapper.toEventResponse(savedEvent);
+		return response;
+	}
+	
+	public List<EventResponseDTO> getAllEvent(){
+		List<Event> events = eventRepo.findAll();
+		List<EventResponseDTO> response = events.stream().map(e-> mapper.toEventResponse(e)).toList();
+		return response;
+	}
+	
+	public EventResponseDTO getEventById(Long id) {
+		Optional<Event> data = eventRepo.findById(id);
+		if(!data.isPresent()) {
+			throw new EventNotFoundException("Event not found");
+		}
+		EventResponseDTO response = mapper.toEventResponse(data.get());
+		return response;
+	}
+	
+	public void deleteEvent(Long id) {
+		if(!eventRepo.existsById(id)) {
+			throw new EventNotFoundException("Event not found");
+		}
+		eventRepo.deleteById(id);
+	}
+	
+	public List<EventResponseDTO> filteredEvent(LocalDate startDate,LocalDate endDate){
+		List<Event> result = eventRepo.findAll();
+		List<EventResponseDTO> response = result.stream()
+				.filter(e->e.getDate().isAfter(startDate)&&e.getDate().isBefore(endDate))
+				.map(e->mapper.toEventResponse(e))
+				.toList();
+		return response;
+	}
+	
+	public PurchaseResponseDTO purchaseEvent(PurchaseRequestDTO request) {
+		Optional<Event> data = eventRepo.findById(request.getId());
+		if(!data.isPresent()) {
+			throw new EventNotFoundException("Event not found");
+		}
+		Event event = data.get();
+		if(event.getAvailableTickets() < request.getQuantity()) {
+			throw new TicketOutOfBoundException("Quantity exceeds");
+		}
+		event.setAvailableTickets(event.getAvailableTickets() - request.getQuantity());
+		BigDecimal total = event.getPrice().multiply(new BigDecimal(request.getQuantity()));
+		PurchaseResponseDTO response = new PurchaseResponseDTO();
+		response.setId(request.getId());
+		response.setShowName(request.getShowName());
+		response.setTotalPrice(total);
+		return response;
+	}
+	
+}

@@ -1,0 +1,51 @@
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserRegistrationRequest {
+
+	
+    @NotBlank(message = "Username must not be blank")
+    @Size(min = 3, max = 20, message = "Username must be 3-20 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9_.-]+$", message = "Username can contain letters, digits, _, ., -")
+    private String username;
+
+    @NotBlank(message = "Password must not be blank")
+    @Size(min = 8, max = 64, message = "Password must be 8-64 characters")
+    private String password;
+
+
+    @NotBlank
+    @Email(message = "Email must be valid")
+    private String email;
+
+
+    @NotNull
+    @Min(value = 18, message = "Age must be at least 18")
+    @Max(value = 120, message = "Age must be at most 120")
+    private Integer age;
+
+    @Positive(message = "Salary must be positive")
+    @Digits(integer = 10, fraction = 2, message = "Salary must have up to 10 digits and 2 decimals")
+    private BigDecimal salary;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Discount must be > 0")
+    @DecimalMax(value = "0.50", message = "Discount must be <= 0.50")
+    private BigDecimal discount;
+
+
+    @Past(message = "Date of birth must be in the past")
+    private LocalDate dateOfBirth;
+
+    @FutureOrPresent(message = "Membership start must be today or in the future")
+    private LocalDate membershipStart;
+
+    
+    // Advanced Hibernate Validator annotations
+    @URL(message = "Profile URL must be valid")
+    private String profileUrl;
+
+    @CreditCardNumber(ignoreNonDigitCharacters = true, message = "Credit card must be valid (Luhn)")
+    private String creditCard;
+
+}
